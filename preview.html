@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Hunar Pass — Interactive Mobile App Preview</title>
+  <!-- Tailwind CSS via Google static CDN for Antigravity & fallback CDN -->
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes pulseRing {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.7); }
+      70% { transform: scale(1.05); box-shadow: 0 0 0 16px rgba(234, 88, 12, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(234, 88, 12, 0); }
+    }
+    .pulse-ring {
+      animation: pulseRing 1.8s infinite;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .passport-gradient {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    }
+    .gold-shimmer {
+      background: linear-gradient(90deg, #f59e0b, #fbbf24, #d97706, #f59e0b);
+      background-size: 200% auto;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-2 sm:p-4 flex flex-col items-center justify-start font-sans antialiased selection:bg-orange-500 selection:text-white">
+
+  <!-- ================= TOP CONTROLS & NAVIGATION BAR ================= -->
+  <header class="w-full max-w-md mb-3 flex flex-col gap-2">
+    <div class="flex items-center justify-between px-1">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white font-black shadow-md shadow-orange-500/20 text-sm">
+          HP
+        </div>
+        <div>
+          <h1 class="text-sm font-black text-white tracking-tight flex items-center gap-1.5 leading-none">
+            <span>Hunar Pass</span>
+            <span class="text-[9px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded-full font-bold">Interactive Demo</span>
+          </h1>
+          <p class="text-[10px] text-slate-400 mt-0.5">Voice-first skill passport for India's trades</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1">
+        <button onclick="toggleAudioSpeech()" id="audio-btn" class="text-[10px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 px-2 py-1 rounded-lg border border-slate-700 flex items-center gap-1 shadow-xs">
+          <span id="audio-icon">🔊</span> <span id="audio-label">Listen</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Screen Tabs Switcher -->
+    <nav class="grid grid-cols-7 gap-0.5 bg-slate-900/90 backdrop-blur p-1 rounded-2xl border border-slate-800 text-[10px] font-black shadow-lg">
+      <button onclick="switchScreen('home')" id="tab-home" class="py-1.5 rounded-xl text-center transition-all bg-orange-600 text-white shadow-xs">
+        Home
+      </button>
+      <button onclick="switchScreen('create')" id="tab-create" class="py-1.5 rounded-xl text-center transition-all text-slate-400 hover:text-white">
+        Create
+      </button>
+      <button onclick="switchScreen('interview')" id="tab-interview" class="py-1.5 rounded-xl text-center transition-all text-slate-400 hover:text-white">
+        Voice Q&A
+      </button>
+      <button onclick="switchScreen('passport')" id="tab-passport" class="py-1.5 rounded-xl text-center transition-all text-slate-400 hover:text-white">
+        Passport
+      </button>
+      <button onclick="switchScreen('vouch')" id="tab-vouch" class="py-1.5 rounded-xl text-center transition-all text-slate-400 hover:text-white">
+        Vouch
+      </button>
+      <button onclick="switchScreen('find')" id="tab-find" class="py-1.5 rounded-xl text-center transition-all text-slate-400 hover:text-white">
+        Find
+      </button>
+      <button onclick="switchScreen('jobs')" id="tab-jobs" class="py-1.5 rounded-xl text-center transition-all text-slate-400 hover:text-white">
+        Jobs
+      </button>
+    </nav>
+  </header>
+
+  <!-- ================= PHONE DEVICE CONTAINER (360px - 410px mobile-first) ================= -->
+  <main class="w-full max-w-[400px] bg-slate-50 text-slate-900 rounded-[36px] shadow-2xl border-[6px] border-slate-800 overflow-hidden flex flex-col h-[740px] relative">
+
+    <!-- Phone Status Header -->
+    <div class="bg-white px-4 pt-2 pb-1.5 flex justify-between items-center text-[10px] font-black text-slate-400 border-b border-slate-100 select-none">
+      <span>09:41</span>
+      <div class="w-16 h-4 bg-slate-900 rounded-full flex items-center justify-center">
+        <div class="w-2.5 h-2.5 rounded-full bg-slate-800 border border-slate-700"></div>
+      </div>
+      <div class="flex items-center gap-1 font-bold">
+        <span>5G</span>
+        <span>⚡ 98%</span>
+      </div>
+    </div>
+
+    <!-- App Top Navigation Bar -->
+    <div class="bg-white px-3.5 py-2.5 border-b border-orange-100 flex items-center justify-between shadow-xs sticky top-0 z-30">
+      <div class="flex items-center gap-2 cursor-pointer" onclick="switchScreen('home')">
+        <div class="w-7 h-7 rounded-xl bg-orange-600 flex items-center justify-center text-white shadow-xs font-black text-xs">
+          HP
+        </div>
+        <div>
+          <h2 class="text-xs font-black text-slate-900 leading-none">Hunar Pass</h2>
+          <p id="top-url-label" class="text-[9px] font-bold text-orange-600 mt-0.5">hunarpass.in/</p>
+        </div>
+      </div>
+
+      <!-- Quick Action Pill -->
+      <div class="flex items-center gap-1.5">
+        <button onclick="switchScreen('find')" class="text-[10px] font-black bg-orange-50 text-orange-700 border border-orange-200 px-2 py-1 rounded-xl flex items-center gap-1 hover:bg-orange-100 active:scale-95 transition-all">
+          <span>💼</span> <span>Hiring</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- SCROLLABLE SCREEN BODY -->
+    <div id="screen-container" class="flex-1 overflow-y-auto p-3.5 flex flex-col gap-3.5 no-scrollbar bg-slate-50">
+
+      <!-- ========================================================================= -->
+      <!-- 1. HOME / LANDING SCREEN                                                  -->
+      <!-- ========================================================================= -->
+      <div id="screen-home" class="flex flex-col gap-3.5">
+        <!-- Language Switcher -->
+        <div class="bg-white rounded-2xl p-2 border-2 border-slate-200 shadow-xs flex items-center justify-between">
+          <span class="text-[10px] font-black text-slate-500 uppercase tracking-wide pl-2">
+            🌐 Language:
+          </span>
+          <div class="flex gap-1">
+            <button onclick="setLang('en')" id="lang-btn-en" class="px-2.5 py-1 rounded-xl text-xs font-black transition-all bg-orange-600 text-white shadow-xs">
+              English
+            </button>
+            <button onclick="setLang('hi')" id="lang-btn-hi" class="px-2.5 py-1 rounded-xl text-xs font-bold transition-all text-slate-600 hover:bg-slate-100">
+              हिन्दी
+            </button>
+            <button onclick="setLang('kn')" id="lang-btn-kn" class="px-2.5 py-1 rounded-xl text-xs font-bold transition-all text-slate-600 hover:bg-slate-100">
+              ಕನ್ನಡ
+            </button>
+          </div>
+        </div>
+
+        <!-- Hero Headline Card -->
+        <div class="bg-gradient-to-br from-orange-600 to-amber-600 rounded-3xl p-5 text-white shadow-lg shadow-orange-600/20 flex flex-col gap-3 relative overflow-hidden">
+          <div class="absolute -right-4 -bottom-4 text-7xl opacity-15 select-none font-black">
+            🪪
+          </div>
+          <span class="text-[10px] font-black bg-white/20 text-white px-2.5 py-0.5 rounded-full w-fit tracking-wide uppercase border border-white/30">
+            Voice-First Skill Passport
+          </span>
+          <h2 id="home-headline" class="text-2xl font-black leading-tight tracking-tight">
+            Your skill deserves proof.
+          </h2>
+          <p id="home-subline" class="text-xs text-orange-50 font-medium leading-relaxed">
+            Speak about your work. Get a skill passport. Find better jobs.
+          </p>
+          <button onclick="speakCurrentHero()" class="w-fit flex items-center gap-1.5 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-xl text-xs font-bold border border-white/20 active:scale-95 transition-all">
+            <span>📢</span> <span id="home-listen-btn">Listen in your language</span>
+          </button>
+        </div>
+
+        <!-- 2 Large Action Buttons -->
+        <div class="grid grid-cols-1 gap-2.5">
+          <!-- I'm a worker button -->
+          <button onclick="switchScreen('create')" class="p-4 bg-white rounded-2xl border-2 border-orange-500 shadow-md hover:bg-orange-50/50 active:scale-98 transition-all flex items-center justify-between text-left group">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-2xl bg-orange-100 text-2xl flex items-center justify-center border border-orange-200 group-hover:scale-105 transition-transform">
+                🎙️
+              </div>
+              <div>
+                <h3 id="btn-worker-title" class="text-base font-black text-slate-900 leading-tight">
+                  I'm a worker
+                </h3>
+                <p id="btn-worker-sub" class="text-[11px] font-semibold text-slate-500">
+                  Speak in Hindi or Kannada to get your passport
+                </p>
+              </div>
+            </div>
+            <span class="text-orange-600 font-black text-xl group-hover:translate-x-1 transition-transform">→</span>
+          </button>
+
+          <!-- I'm hiring button -->
+          <button onclick="switchScreen('find')" class="p-4 bg-white rounded-2xl border-2 border-slate-300 shadow-sm hover:bg-slate-50 active:scale-98 transition-all flex items-center justify-between text-left group">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-2xl bg-blue-50 text-2xl flex items-center justify-center border border-blue-200 group-hover:scale-105 transition-transform">
+                💼
+              </div>
+              <div>
+                <h3 id="btn-hiring-title" class="text-base font-black text-slate-900 leading-tight">
+                  I'm hiring
+                </h3>
+                <p id="btn-hiring-sub" class="text-[11px] font-semibold text-slate-500">
+                  Find verified & vouched tradespeople in Bengaluru
+                </p>
+              </div>
+            </div>
+            <span class="text-slate-400 font-black text-xl group-hover:translate-x-1 transition-transform">→</span>
+          </button>
+        </div>
+
+        <!-- 3-Step How It Works -->
+        <div class="bg-white rounded-3xl p-4 border-2 border-slate-200 shadow-xs flex flex-col gap-3">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+            <h4 class="text-xs font-black text-slate-800 uppercase tracking-wide flex items-center gap-1.5">
+              <span>⚙️</span> <span id="hiw-title">How it works</span>
+            </h4>
+            <span class="text-[9px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full border border-orange-200">
+              3 Simple Steps
+            </span>
+          </div>
+
+          <div class="flex flex-col gap-2.5" id="hiw-steps-container">
+            <!-- Dynamic 3 steps injected via JS for language switcher -->
+          </div>
+        </div>
+
+        <!-- Supported Trades Badges -->
+        <div class="flex flex-col gap-1.5 px-1">
+          <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">
+            Verified Trades:
+          </span>
+          <div class="flex flex-wrap gap-1.5 text-xs font-bold">
+            <span class="px-2.5 py-1 bg-white border border-slate-200 rounded-xl shadow-xs">🚰 Plumber</span>
+            <span class="px-2.5 py-1 bg-white border border-slate-200 rounded-xl shadow-xs">⚡ Electrician</span>
+            <span class="px-2.5 py-1 bg-white border border-slate-200 rounded-xl shadow-xs">🧱 Mason</span>
+            <span class="px-2.5 py-1 bg-white border border-slate-200 rounded-xl shadow-xs">🪚 Carpenter</span>
+            <span class="px-2.5 py-1 bg-white border border-slate-200 rounded-xl shadow-xs">🎨 Painter</span>
+            <span class="px-2.5 py-1 bg-white border border-slate-200 rounded-xl shadow-xs">👨‍🏭 Welder</span>
+            <span class="px-2.5 py-1 bg-white border border-slate-200 rounded-xl shadow-xs">🔧 Mechanic</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================================================= -->
+      <!-- 2. WORKER REGISTRATION SCREEN (/create)                                  -->
+      <!-- ========================================================================= -->
+      <div id="screen-create" class="hidden flex-col gap-3.5">
+        <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+          <div>
+            <h2 class="text-base font-black text-slate-900 leading-tight">Worker Registration</h2>
+            <p class="text-[10px] font-bold text-slate-500">Step 1 of 2 • Basic Trade Details</p>
+          </div>
+          <button onclick="prefillSampleWorker()" class="text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 px-2 py-1 rounded-xl hover:bg-amber-200">
+            ⚡ Pre-fill Sample
+          </button>
+        </div>
+
+        <!-- Registration Form -->
+        <div class="bg-white rounded-3xl p-4 border-2 border-slate-200 shadow-xs flex flex-col gap-3.5">
+          <!-- Full Name -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-black text-slate-700">Full Name / पूरा नाम</label>
+            <input type="text" id="reg-name" placeholder="e.g. Ramesh Kumar" value="Ramesh Kumar" class="w-full px-3.5 py-2.5 rounded-2xl border-2 border-slate-200 focus:border-orange-500 focus:outline-hidden text-sm font-bold text-slate-900 bg-slate-50/50" />
+          </div>
+
+          <!-- 10-Digit Mobile Number with Live Indian Validator -->
+          <div class="flex flex-col gap-1">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-black text-slate-700">Mobile Number (10 digits)</label>
+              <span id="phone-valid-badge" class="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200">
+                ✓ Valid Indian Number
+              </span>
+            </div>
+            <div class="relative flex items-center">
+              <span class="absolute left-3 text-xs font-black text-slate-400 select-none">+91</span>
+              <input type="tel" id="reg-phone" maxlength="10" placeholder="9876543210" value="9876543210" oninput="validateRegistrationPhone()" class="w-full pl-12 pr-3.5 py-2.5 rounded-2xl border-2 border-slate-200 focus:border-orange-500 focus:outline-hidden text-sm font-bold text-slate-900 bg-slate-50/50" />
+            </div>
+            <p id="phone-err-msg" class="text-[10px] font-semibold text-rose-600 hidden">
+              Must be a 10-digit number starting with 6, 7, 8, or 9
+            </p>
+          </div>
+
+          <!-- Trade Selection (Big Icons) -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-black text-slate-700">Select Your Trade / आपका काम</label>
+            <div class="grid grid-cols-4 gap-1.5 text-center" id="trade-select-grid">
+              <button type="button" onclick="selectTrade('Plumber')" id="t-Plumber" class="p-2 rounded-2xl border-2 border-orange-500 bg-orange-50 text-orange-950 flex flex-col items-center gap-0.5 shadow-xs">
+                <span class="text-2xl">🚰</span>
+                <span class="text-[10px] font-black">Plumber</span>
+              </button>
+              <button type="button" onclick="selectTrade('Electrician')" id="t-Electrician" class="p-2 rounded-2xl border-2 border-slate-200 bg-white text-slate-700 flex flex-col items-center gap-0.5">
+                <span class="text-2xl">⚡</span>
+                <span class="text-[10px] font-black">Electrician</span>
+              </button>
+              <button type="button" onclick="selectTrade('Mason')" id="t-Mason" class="p-2 rounded-2xl border-2 border-slate-200 bg-white text-slate-700 flex flex-col items-center gap-0.5">
+                <span class="text-2xl">🧱</span>
+                <span class="text-[10px] font-black">Mason</span>
+              </button>
+              <button type="button" onclick="selectTrade('Carpenter')" id="t-Carpenter" class="p-2 rounded-2xl border-2 border-slate-200 bg-white text-slate-700 flex flex-col items-center gap-0.5">
+                <span class="text-2xl">🪚</span>
+                <span class="text-[10px] font-black">Carpenter</span>
+              </button>
+              <button type="button" onclick="selectTrade('Painter')" id="t-Painter" class="p-2 rounded-2xl border-2 border-slate-200 bg-white text-slate-700 flex flex-col items-center gap-0.5">
+                <span class="text-2xl">🎨</span>
+                <span class="text-[10px] font-black">Painter</span>
+              </button>
+              <button type="button" onclick="selectTrade('Welder')" id="t-Welder" class="p-2 rounded-2xl border-2 border-slate-200 bg-white text-slate-700 flex flex-col items-center gap-0.5">
+                <span class="text-2xl">👨‍🏭</span>
+                <span class="text-[10px] font-black">Welder</span>
+              </button>
+              <button type="button" onclick="selectTrade('Mechanic')" id="t-Mechanic" class="p-2 rounded-2xl border-2 border-slate-200 bg-white text-slate-700 flex flex-col items-center gap-0.5">
+                <span class="text-2xl">🔧</span>
+                <span class="text-[10px] font-black">Mechanic</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Area / Locality Dropdown -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-black text-slate-700">Area / City (Bengaluru)</label>
+            <select id="reg-area" class="w-full px-3.5 py-2.5 rounded-2xl border-2 border-slate-200 focus:border-orange-500 focus:outline-hidden text-sm font-bold text-slate-900 bg-slate-50/50">
+              <option value="Koramangala, Bengaluru">Koramangala, Bengaluru</option>
+              <option value="Indiranagar, Bengaluru">Indiranagar, Bengaluru</option>
+              <option value="Whitefield, Bengaluru">Whitefield, Bengaluru</option>
+              <option value="HSR Layout, Bengaluru">HSR Layout, Bengaluru</option>
+              <option value="Jayanagar, Bengaluru">Jayanagar, Bengaluru</option>
+              <option value="BTM Layout, Bengaluru">BTM Layout, Bengaluru</option>
+              <option value="Malleshwaram, Bengaluru">Malleshwaram, Bengaluru</option>
+              <option value="Electronic City, Bengaluru">Electronic City, Bengaluru</option>
+            </select>
+          </div>
+
+          <!-- Years of Experience -->
+          <div class="flex flex-col gap-1">
+            <div class="flex justify-between items-center">
+              <label class="text-xs font-black text-slate-700">Experience: <span id="exp-val" class="text-orange-600 font-black">7 Years</span></label>
+            </div>
+            <input type="range" id="reg-exp" min="1" max="25" value="7" oninput="document.getElementById('exp-val').innerText = this.value + ' Years'" class="w-full accent-orange-600" />
+          </div>
+
+          <!-- Preferred Interview Language -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-black text-slate-700">Interview Language / साक्षात्कार भाषा</label>
+            <div class="grid grid-cols-3 gap-1.5">
+              <button type="button" onclick="setInterviewLang('hi-IN')" id="ilang-hi" class="py-2 rounded-2xl border-2 border-orange-500 bg-orange-50 text-orange-950 font-black text-xs text-center">
+                हिन्दी
+              </button>
+              <button type="button" onclick="setInterviewLang('kn-IN')" id="ilang-kn" class="py-2 rounded-2xl border-2 border-slate-200 bg-white text-slate-700 font-bold text-xs text-center">
+                ಕನ್ನಡ
+              </button>
+              <button type="button" onclick="setInterviewLang('en-IN')" id="ilang-en" class="py-2 rounded-2xl border-2 border-slate-200 bg-white text-slate-700 font-bold text-xs text-center">
+                English
+              </button>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button onclick="saveWorkerAndStartInterview()" class="w-full mt-1 py-3.5 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 text-white font-black text-sm rounded-2xl shadow-lg border border-orange-300 active:scale-95 transition-all flex items-center justify-center gap-2">
+            <span>Continue to Voice Assessment</span>
+            <span>🎙️ →</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ========================================================================= -->
+      <!-- 3. VOICE INTERVIEW SCREEN (/interview/[workerId])                        -->
+      <!-- ========================================================================= -->
+      <div id="screen-interview" class="hidden flex-col gap-3.5">
+        <!-- Progress Indicator -->
+        <div class="bg-white rounded-2xl p-3 border-2 border-slate-200 shadow-xs flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-2xl" id="interview-trade-icon">🚰</span>
+            <div>
+              <h3 id="interview-worker-label" class="text-xs font-black text-slate-900 leading-tight">
+                Ramesh Kumar • Plumber
+              </h3>
+              <p id="interview-progress-label" class="text-[10px] font-bold text-orange-600">
+                Question 1 of 4 • Practical Diagnostic
+              </p>
+            </div>
+          </div>
+          <div class="flex gap-1" id="question-pills">
+            <span class="w-2.5 h-2.5 rounded-full bg-orange-600"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-slate-200"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-slate-200"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-slate-200"></span>
+          </div>
+        </div>
+
+        <!-- Question Card -->
+        <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-3xl p-4 shadow-lg flex flex-col gap-3 border border-slate-700 relative">
+          <div class="flex items-center justify-between">
+            <span id="interview-q-badge" class="text-[9px] font-black uppercase tracking-wider bg-orange-500/30 text-orange-300 border border-orange-400/30 px-2 py-0.5 rounded-full">
+              Spoken Assessment
+            </span>
+            <button onclick="speakCurrentQuestion()" class="text-xs bg-white/10 hover:bg-white/20 text-white px-2.5 py-1 rounded-xl flex items-center gap-1 active:scale-95 border border-white/20 font-bold">
+              <span>🔊</span> <span>Listen</span>
+            </button>
+          </div>
+
+          <h3 id="current-question-text" class="text-sm font-bold leading-relaxed text-slate-100">
+            "बाथरूम की दीवार में टाइल्स के पीछे छिपी हुई पाइप लीकेज का पता आप बिना पूरी दीवार तोड़े कैसे लगाते हैं?"
+          </h3>
+
+          <div class="text-[10px] text-slate-400 font-medium border-t border-slate-700/60 pt-2 flex items-center justify-between">
+            <span>Tests: Concealed Leak Tracing</span>
+            <span class="text-amber-400">Claude 3.5 Assessor</span>
+          </div>
+        </div>
+
+        <!-- Microphone Recording Section -->
+        <div class="bg-white rounded-3xl p-5 border-2 border-slate-200 shadow-sm flex flex-col items-center justify-center gap-3 text-center">
+          <button onclick="toggleMicrophone()" id="mic-main-btn" class="w-20 h-20 rounded-full bg-orange-600 hover:bg-orange-700 text-white flex items-center justify-center text-3xl shadow-xl shadow-orange-600/30 active:scale-95 transition-all relative">
+            <span id="mic-icon">🎙️</span>
+          </button>
+
+          <div>
+            <p id="mic-status-label" class="text-xs font-black text-slate-800">
+              Tap mic to speak your answer
+            </p>
+            <p class="text-[10px] text-slate-500 mt-0.5">
+              Web Speech API active • Browser speech recognition
+            </p>
+          </div>
+
+          <!-- Live Spoken Transcript Box -->
+          <div class="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl p-3 text-left">
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-[9px] font-black text-slate-400 uppercase tracking-wide">
+                Live Transcript / Answer:
+              </span>
+              <button onclick="usePreRecordedSample()" class="text-[9px] font-bold text-orange-600 hover:underline">
+                Use pre-recorded answer ⚡
+              </button>
+            </div>
+            <textarea id="live-transcript" rows="3" class="w-full bg-transparent text-xs font-semibold text-slate-800 border-none outline-hidden resize-none" placeholder="Your spoken words will appear here... (You can also edit or type manually)"></textarea>
+          </div>
+
+          <!-- Question Action Navigation -->
+          <div class="w-full flex items-center justify-between gap-2 mt-1">
+            <button onclick="fastTrackAllAnswers()" class="px-3 py-2 bg-amber-50 text-amber-900 border border-amber-300 rounded-xl text-[10px] font-black hover:bg-amber-100">
+              ⚡ Fast-Track All 4
+            </button>
+            <button onclick="nextQuestionOrSubmit()" id="btn-next-question" class="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-black shadow-md flex items-center justify-center gap-1 active:scale-95">
+              <span>Next Question</span> <span>→</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================================================= -->
+      <!-- 4. PUBLIC SKILL PASSPORT SCREEN (/w/[workerId])                          -->
+      <!-- ========================================================================= -->
+      <div id="screen-passport" class="hidden flex-col gap-3.5">
+        
+        <!-- Action Toolbar -->
+        <div class="flex items-center justify-between px-1">
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs">🪪</span>
+            <span class="text-xs font-black text-slate-800">Skill Passport</span>
+            <span class="text-[9px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-300">
+              Verified
+            </span>
+          </div>
+
+          <div class="flex items-center gap-1.5">
+            <button onclick="sharePassportWhatsApp()" class="px-2.5 py-1 bg-emerald-600 text-white font-bold text-[10px] rounded-xl flex items-center gap-1 shadow-xs hover:bg-emerald-700">
+              <span>💬</span> <span>WhatsApp</span>
+            </button>
+            <button onclick="switchScreen('vouch')" class="px-2.5 py-1 bg-orange-600 text-white font-bold text-[10px] rounded-xl flex items-center gap-1 shadow-xs hover:bg-orange-700">
+              <span>🤝</span> <span>Vouch</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Digital ID Card (Print & Image Downloadable Layout) -->
+        <div id="passport-card-element" class="passport-gradient text-white rounded-3xl p-4 shadow-xl border-2 border-slate-700 relative overflow-hidden flex flex-col gap-3.5">
+          
+          <!-- Card Header & Badge -->
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-400 to-orange-500 p-0.5 shadow-md">
+                <div class="w-full h-full bg-slate-900 rounded-[14px] flex items-center justify-center text-3xl" id="pass-avatar">
+                  👨‍🔧
+                </div>
+              </div>
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <h3 id="pass-name" class="text-base font-black text-white leading-tight">
+                    Ramesh Kumar
+                  </h3>
+                  <span class="text-blue-400 text-xs" title="AI Skill Interview Completed">☑️</span>
+                </div>
+                <p id="pass-trade" class="text-xs font-bold text-amber-400">
+                  Plumber • 7 Yrs Exp
+                </p>
+                <p id="pass-area" class="text-[10px] text-slate-300">
+                  📍 Koramangala, Bengaluru
+                </p>
+              </div>
+            </div>
+
+            <!-- Level Badge -->
+            <div class="flex flex-col items-end">
+              <span id="pass-level-badge" class="px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 shadow-xs">
+                ⭐ Expert
+              </span>
+              <span class="text-[8px] text-slate-400 mt-0.5">PMKVY L4 Level</span>
+            </div>
+          </div>
+
+          <!-- Summary Evaluation -->
+          <div class="bg-white/10 backdrop-blur rounded-2xl p-3 border border-white/15">
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-[9px] font-black uppercase tracking-wider text-amber-300">
+                AI Assessment Summary
+              </span>
+              <button onclick="speakPassportSummary()" class="text-[9px] font-bold text-slate-300 hover:text-white flex items-center gap-1">
+                <span>🔊</span> <span>Listen</span>
+              </button>
+            </div>
+            <p id="pass-summary" class="text-xs font-medium text-slate-100 leading-snug">
+              7 वर्षों के अनुभव के साथ CPVC और UPVC कंसील्ड पाइप फिटिंग और लीकेज रिपेयर के कुशल कारीगर हैं। बूस्टर पंप और सेनेटरी वेयर इंस्टॉलेशन में दक्ष हैं।
+            </p>
+          </div>
+
+          <!-- Verified Skill Chips -->
+          <div class="flex flex-col gap-1.5">
+            <span class="text-[9px] font-black uppercase tracking-wider text-slate-400">
+              Verified Skills Demonstrated in Voice Q&A:
+            </span>
+            <div id="pass-skills-container" class="flex flex-wrap gap-1.5">
+              <span class="px-2 py-0.5 rounded-lg bg-slate-800 text-slate-200 border border-slate-700 text-[10px] font-bold">
+                Concealed Pipe Fitting
+              </span>
+              <span class="px-2 py-0.5 rounded-lg bg-slate-800 text-slate-200 border border-slate-700 text-[10px] font-bold">
+                Leak Detection
+              </span>
+              <span class="px-2 py-0.5 rounded-lg bg-slate-800 text-slate-200 border border-slate-700 text-[10px] font-bold">
+                Sanitary Ware Installation
+              </span>
+              <span class="px-2 py-0.5 rounded-lg bg-slate-800 text-slate-200 border border-slate-700 text-[10px] font-bold">
+                Booster Pump Setup
+              </span>
+              <span class="px-2 py-0.5 rounded-lg bg-slate-800 text-slate-200 border border-slate-700 text-[10px] font-bold">
+                Drainage Clearing
+              </span>
+            </div>
+          </div>
+
+          <!-- Indicative Daily Wage Range -->
+          <div class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-2.5 flex items-center justify-between">
+            <div>
+              <span class="text-[9px] font-black uppercase text-amber-300 tracking-wide block">
+                Indicative Daily Wage:
+              </span>
+              <span id="pass-wage" class="text-sm font-black text-white">
+                ₹850 - ₹1,250 / day
+              </span>
+            </div>
+            <span class="text-[8px] font-semibold text-amber-200/80 bg-amber-950/40 px-2 py-1 rounded-lg border border-amber-800">
+              Market estimate • sample data
+            </span>
+          </div>
+
+          <!-- Trust & Vouches Summary -->
+          <div class="bg-emerald-950/30 border border-emerald-500/30 rounded-2xl p-2.5 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">🛡️</span>
+              <div>
+                <span class="text-xs font-black text-emerald-300 block leading-tight" id="pass-trust-header">
+                  Trust Level: High (2 Customer Vouches)
+                </span>
+                <span class="text-[9px] text-emerald-100/70" id="pass-trust-sub">
+                  2 customer vouches + spoken skill interview completed
+                </span>
+              </div>
+            </div>
+            <span class="text-xs font-black text-emerald-400">100% 👍</span>
+          </div>
+
+          <!-- QR Code Preview & Share Callout -->
+          <div class="bg-white text-slate-900 rounded-2xl p-3 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <!-- Inline SVG QR Code -->
+              <div class="w-12 h-12 bg-slate-900 p-1 rounded-xl flex items-center justify-center text-white text-xl">
+                <span>📱</span>
+              </div>
+              <div>
+                <h4 class="text-xs font-black leading-tight">Digital QR Verification</h4>
+                <p class="text-[9px] text-slate-500">Scan to view live public credentials</p>
+              </div>
+            </div>
+            <button onclick="copyPassportLink()" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 rounded-xl text-[10px] font-bold">
+              Copy Link 📋
+            </button>
+          </div>
+        </div>
+
+        <!-- Next Steps To Grow Section -->
+        <div class="bg-white rounded-3xl p-4 border-2 border-slate-200 shadow-xs flex flex-col gap-2">
+          <h4 class="text-xs font-black text-slate-900 flex items-center gap-1">
+            <span>🚀</span> <span>Next Steps to Grow Your Career:</span>
+          </h4>
+          <p id="pass-next-steps" class="text-xs text-slate-600 font-medium leading-relaxed">
+            Learn solar water heater loop integration and apply for government-recognized RPL (PMKVY Level 4) or ITI trade certification for contractor empanelment.
+          </p>
+        </div>
+
+        <!-- Past Customer Vouches List -->
+        <div class="bg-white rounded-3xl p-4 border-2 border-slate-200 shadow-xs flex flex-col gap-2.5">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-black text-slate-900 flex items-center gap-1.5">
+              <span>⭐</span> <span>Customer Vouches (<span id="pass-vouch-count">2</span>)</span>
+            </h4>
+            <button onclick="switchScreen('vouch')" class="text-[10px] font-bold text-orange-600 hover:underline">
+              + Add Vouch
+            </button>
+          </div>
+
+          <div id="pass-vouches-list" class="flex flex-col gap-2">
+            <!-- Vouch item 1 -->
+            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col gap-1">
+              <div class="flex justify-between items-center text-[11px] font-bold">
+                <span class="text-slate-900">Ananya S., customer</span>
+                <span class="text-[9px] text-slate-500">Nov 2026 • Would Hire Again 👍</span>
+              </div>
+              <p class="text-[11px] text-slate-600">
+                "Reliable and punctual. Installed entire sanitary ware in our flat with zero leakage."
+              </p>
+            </div>
+            <!-- Vouch item 2 -->
+            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col gap-1">
+              <div class="flex justify-between items-center text-[11px] font-bold">
+                <span class="text-slate-900">Kavitha M., customer</span>
+                <span class="text-[9px] text-slate-500">Oct 2026 • Would Hire Again 👍</span>
+              </div>
+              <p class="text-[11px] text-slate-600">
+                "Fixed underground pipe leakage in bathroom within 2 hours. Very clean work!"
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================================================= -->
+      <!-- 5. PAST CUSTOMER VOUCHING SCREEN (/vouch/[workerId])                     -->
+      <!-- ========================================================================= -->
+      <div id="screen-vouch" class="hidden flex-col gap-3.5">
+        <div class="bg-white rounded-2xl p-3 border-2 border-slate-200 shadow-xs flex items-center justify-between">
+          <div>
+            <h2 class="text-sm font-black text-slate-900 leading-tight">Customer Endorsement</h2>
+            <p class="text-[10px] text-slate-500 font-bold">No login or signup required</p>
+          </div>
+          <span class="text-xs bg-emerald-50 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded-full font-bold">
+            1-Tap Vouch
+          </span>
+        </div>
+
+        <!-- Worker Being Endorsed -->
+        <div class="bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-2xl p-3 shadow-md flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl">
+            🚰
+          </div>
+          <div>
+            <h3 class="text-xs font-black">Vouching for Ramesh Kumar</h3>
+            <p class="text-[10px] text-orange-100 font-medium">Plumber • Koramangala, Bengaluru</p>
+          </div>
+        </div>
+
+        <!-- Vouch Form -->
+        <div class="bg-white rounded-3xl p-4 border-2 border-slate-200 shadow-xs flex flex-col gap-3">
+          <!-- Voucher Name -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-black text-slate-700">Your Full Name / आपका नाम</label>
+            <input type="text" id="vouch-name" value="Suresh Nair" placeholder="e.g. Suresh Nair" class="w-full px-3.5 py-2 rounded-2xl border-2 border-slate-200 focus:border-orange-500 focus:outline-hidden text-sm font-bold text-slate-900 bg-slate-50/50" />
+          </div>
+
+          <!-- Voucher Phone (Enforces duplicate & self-vouch check) -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-black text-slate-700">Your 10-Digit Mobile Number</label>
+            <input type="tel" id="vouch-phone" value="9845012345" maxlength="10" placeholder="9845012345" class="w-full px-3.5 py-2 rounded-2xl border-2 border-slate-200 focus:border-orange-500 focus:outline-hidden text-sm font-bold text-slate-900 bg-slate-50/50" />
+            <p class="text-[9px] text-slate-500">
+              *Enforces 1 vouch per phone and prevents self-vouching.
+            </p>
+          </div>
+
+          <!-- How do you know worker? -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-black text-slate-700">How do you know this worker?</label>
+            <div class="grid grid-cols-3 gap-1.5 text-center">
+              <button type="button" onclick="setRelationship('customer')" id="rel-customer" class="py-2 rounded-xl border-2 border-orange-500 bg-orange-50 text-orange-950 font-black text-[11px]">
+                Customer
+              </button>
+              <button type="button" onclick="setRelationship('co-worker')" id="rel-coworker" class="py-2 rounded-xl border-2 border-slate-200 bg-white text-slate-700 font-bold text-[11px]">
+                Co-worker
+              </button>
+              <button type="button" onclick="setRelationship('employer')" id="rel-employer" class="py-2 rounded-xl border-2 border-slate-200 bg-white text-slate-700 font-bold text-[11px]">
+                Employer
+              </button>
+            </div>
+          </div>
+
+          <!-- Month of Job -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-black text-slate-700">Month of the Job</label>
+            <input type="month" id="vouch-month" value="2026-11" class="w-full px-3.5 py-2 rounded-2xl border-2 border-slate-200 text-xs font-bold text-slate-900 bg-slate-50/50" />
+          </div>
+
+          <!-- 1-Tap Hire Again Question -->
+          <div class="flex flex-col gap-1.5 pt-1">
+            <label class="text-xs font-black text-slate-800">
+              Would you hire this person again? / क्या आप इन्हें दोबारा काम पर रखेंगे?
+            </label>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" onclick="setWouldHire(true)" id="hire-yes" class="py-2.5 rounded-2xl border-2 border-emerald-500 bg-emerald-50 text-emerald-950 font-black text-xs flex items-center justify-center gap-1.5 shadow-xs">
+                <span>👍 Yes, absolutely</span>
+              </button>
+              <button type="button" onclick="setWouldHire(false)" id="hire-no" class="py-2.5 rounded-2xl border-2 border-slate-200 bg-white text-slate-600 font-bold text-xs flex items-center justify-center gap-1.5">
+                <span>👎 No</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Optional Short Comment -->
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-black text-slate-700">Short Review (Optional)</label>
+            <input type="text" id="vouch-comment" value="Very polite, arrived on time and fixed leakage cleanly! 👍" class="w-full px-3.5 py-2 rounded-2xl border-2 border-slate-200 text-xs font-semibold text-slate-900 bg-slate-50/50" />
+          </div>
+
+          <!-- Submit Vouch -->
+          <button onclick="submitVouchForm()" class="w-full mt-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-2xl shadow-md active:scale-95 transition-all">
+            Submit Endorsement Vouch ⭐
+          </button>
+        </div>
+      </div>
+
+      <!-- ========================================================================= -->
+      <!-- 6. FIND WORKERS SCREEN (/find)                                           -->
+      <!-- ========================================================================= -->
+      <div id="screen-find" class="hidden flex-col gap-3.5">
+        
+        <!-- Header -->
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-black text-slate-900 leading-tight">Find Verified Workers</h2>
+            <p class="text-[10px] text-slate-500 font-bold">Bengaluru • Verified-and-vouched ranked first</p>
+          </div>
+          <button onclick="switchScreen('jobs')" class="text-[10px] font-black bg-slate-900 text-white px-2.5 py-1.5 rounded-xl shadow-xs">
+            Job Board →
+          </button>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="bg-white rounded-3xl p-3 border-2 border-slate-200 shadow-xs flex flex-col gap-2.5">
+          <!-- Trade Filter Chips -->
+          <div class="flex items-center gap-1 overflow-x-auto pb-0.5 no-scrollbar text-[10px] font-black" id="find-trade-chips">
+            <button onclick="filterFindTrade('All')" id="ft-All" class="px-2.5 py-1 rounded-xl bg-orange-600 text-white shadow-xs whitespace-nowrap">All</button>
+            <button onclick="filterFindTrade('Plumber')" id="ft-Plumber" class="px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap">🚰 Plumber</button>
+            <button onclick="filterFindTrade('Electrician')" id="ft-Electrician" class="px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap">⚡ Electrician</button>
+            <button onclick="filterFindTrade('Mason')" id="ft-Mason" class="px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap">🧱 Mason</button>
+            <button onclick="filterFindTrade('Carpenter')" id="ft-Carpenter" class="px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap">🪚 Carpenter</button>
+            <button onclick="filterFindTrade('Painter')" id="ft-Painter" class="px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap">🎨 Painter</button>
+          </div>
+
+          <!-- Area Dropdown Filter -->
+          <select id="find-area-select" onchange="renderFindWorkers()" class="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 bg-slate-50">
+            <option value="All Areas">All Bengaluru Areas</option>
+            <option value="Koramangala">Koramangala</option>
+            <option value="Indiranagar">Indiranagar</option>
+            <option value="Whitefield">Whitefield</option>
+            <option value="HSR Layout">HSR Layout</option>
+            <option value="Jayanagar">Jayanagar</option>
+          </select>
+        </div>
+
+        <!-- Workers List Cards -->
+        <div id="find-workers-list" class="flex flex-col gap-2.5">
+          <!-- Injected via JavaScript from DEMO_WORKERS -->
+        </div>
+      </div>
+
+      <!-- ========================================================================= -->
+      <!-- 7. JOBS BOARD SCREEN (/jobs)                                             -->
+      <!-- ========================================================================= -->
+      <div id="screen-jobs" class="hidden flex-col gap-3.5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-black text-slate-900 leading-tight">Bengaluru Job Board</h2>
+            <p class="text-[10px] text-slate-500 font-bold">Direct hiring • No middleman cuts</p>
+          </div>
+          <button onclick="togglePostJobModal()" class="text-[10px] font-black bg-orange-600 text-white px-3 py-1.5 rounded-xl shadow-xs flex items-center gap-1 active:scale-95">
+            <span>+</span> <span>Post a Job</span>
+          </button>
+        </div>
+
+        <!-- Post a Job Modal (Collapsible) -->
+        <div id="post-job-form-box" class="hidden bg-white rounded-3xl p-4 border-2 border-orange-500 shadow-md flex flex-col gap-2.5">
+          <div class="flex justify-between items-center">
+            <h3 class="text-xs font-black text-slate-900">Post a Trade Job (Bengaluru)</h3>
+            <button onclick="togglePostJobModal()" class="text-xs text-slate-400 hover:text-slate-600">✕</button>
+          </div>
+          <input type="text" id="job-title" placeholder="Job Title (e.g. Bathroom Leakage Specialist Needed)" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold" />
+          <div class="grid grid-cols-2 gap-2">
+            <select id="job-trade" class="px-2 py-2 rounded-xl border border-slate-200 text-xs font-bold">
+              <option value="Plumber">Plumber</option>
+              <option value="Electrician">Electrician</option>
+              <option value="Mason">Mason</option>
+              <option value="Carpenter">Carpenter</option>
+              <option value="Painter">Painter</option>
+            </select>
+            <input type="text" id="job-pay" placeholder="Pay (e.g. ₹1,200/day)" value="₹1,100/day" class="px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold" />
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <input type="text" id="job-employer" placeholder="Your Name / Co." value="Prestige Developers" class="px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold" />
+            <input type="tel" id="job-contact" placeholder="10-Digit Mobile" value="9876501234" maxlength="10" class="px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold" />
+          </div>
+          <button onclick="submitNewJob()" class="w-full py-2 bg-slate-900 text-white rounded-xl text-xs font-black">
+            Publish Job Listing 🚀
+          </button>
+        </div>
+
+        <!-- Jobs List -->
+        <div id="jobs-list-container" class="flex flex-col gap-2.5">
+          <!-- Injected via JavaScript from DEMO_JOBS -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Mandatory Legal Footer Note -->
+    <div class="bg-slate-100 border-t border-slate-200 px-3 py-1.5 text-center text-[9px] text-slate-500 font-semibold leading-tight select-none">
+      ⚠️ Skill levels and wage ranges are AI estimates and not official certification.
+    </div>
+
+    <!-- Phone Bottom Navigation Bar -->
+    <footer class="bg-white/95 backdrop-blur border-t border-slate-200 py-2 px-6 flex justify-around items-center select-none z-20">
+      <button onclick="switchScreen('home')" id="nav-btn-home" class="flex flex-col items-center gap-0.5 text-orange-600 font-extrabold text-[10px]">
+        <span class="text-base">🏠</span>
+        <span>Home</span>
+      </button>
+      <button onclick="switchScreen('create')" id="nav-btn-worker" class="flex flex-col items-center gap-0.5 text-slate-500 hover:text-orange-600 font-bold text-[10px]">
+        <div class="w-8 h-8 -mt-4 rounded-full bg-orange-600 text-white flex items-center justify-center shadow-md border-2 border-white">
+          <span class="text-sm">🎙️</span>
+        </div>
+        <span>Worker</span>
+      </button>
+      <button onclick="switchScreen('find')" id="nav-btn-hiring" class="flex flex-col items-center gap-0.5 text-slate-500 hover:text-orange-600 font-bold text-[10px]">
+        <span class="text-base">💼</span>
+        <span>Hiring</span>
+      </button>
+    </footer>
+
+  </main>
+
+  <!-- ================= CLIENT JAVASCRIPT STATE & LOGIC ================= -->
+  <script>
+    // 1. Translations Dictionary (EN / HI / KN)
+    const translations = {
+      en: {
+        headline: "Your skill deserves proof.",
+        subline: "Speak about your work. Get a skill passport. Find better jobs.",
+        workerBtn: "I'm a worker",
+        workerSub: "Answer 3 voice questions to get your card",
+        hiringBtn: "I'm hiring",
+        hiringSub: "Find verified tradespeople nearby",
+        listen: "Listen to this page",
+        steps: [
+          { icon: "🎙️", title: "Speak your answers", desc: "Answer 3 simple spoken questions about your trade tools and experience." },
+          { icon: "✨", title: "Get your AI Skill Card", desc: "AI generates a certified skill passport with fair daily wage rates." },
+          { icon: "🪪", title: "Vouch & share QR", desc: "Past customers vouch with one tap. Show your QR code to win high-paying jobs." }
+        ]
+      },
+      hi: {
+        headline: "आपके हुनर को प्रमाण मिलना चाहिए।",
+        subline: "अपने काम के बारे में बोलें। स्किल पासपोर्ट पाएं। बेहतर काम खोजें।",
+        workerBtn: "मैं कारीगर हूँ",
+        workerSub: "बोलकर 2 मिनट में अपना हुनर कार्ड बनाएं",
+        hiringBtn: "मुझे काम कराना है",
+        hiringSub: "आस-पास के सत्यापित कामगार खोजें",
+        listen: "यह पेज सुनें",
+        steps: [
+          { icon: "🎙️", title: "बोलकर उत्तर दें", desc: "अपनी भाषा में अपने काम, औजारों और अनुभव से जुड़े 3 आसान सवालों के जवाब दें।" },
+          { icon: "✨", title: "AI हुनर कार्ड तैयार करेगा", desc: "AI आपकी आवाज़ से सत्यापित स्किल कार्ड और उचित दैनिक मजदूरी तय करेगा।" },
+          { icon: "🪪", title: "QR दिखाएं और सिफ़ारिश पाएं", desc: "ग्राहक 1 टैप में सिफ़ारिश करेंगे। बड़ा काम पाने के लिए अपना QR कोड दिखाएं।" }
+        ]
+      },
+      kn: {
+        headline: "ನಿಮ್ಮ ಕೌಶಲ್ಯಕ್ಕೆ ಸಾಕ್ಷಿ ಬೇಕು.",
+        subline: "ನಿಮ್ಮ ಕೆಲಸದ ಬಗ್ಗೆ ಮಾತನಾಡಿ. ಕೌಶಲ್ಯ ಪಾಸ್‌ಪೋರ್ಟ್ ಪಡೆಯಿರಿ. ಉತ್ತಮ ಉದ್ಯೋಗಗಳನ್ನು ಕಂಡುಕೊಳ್ಳಿ.",
+        workerBtn: "ನಾನು ಕೆಲಸಗಾರ",
+        workerSub: "2 ನಿಮಿಷದಲ್ಲಿ ಧ್ವನಿಯ ಮೂಲಕ ಕಾರ್ಡ್ ಮಾಡಿ",
+        hiringBtn: "ನಾನು ಕೆಲಸ ಕೊಡುತ್ತೇನೆ",
+        hiringSub: "ಹತ್ತಿರದ ಪರಿಶೀಲಿಸಿದ ಕೆಲಸಗಾರರನ್ನು ಹುಡುಕಿ",
+        listen: "ಪುಟವನ್ನು ಆಲಿಸಿ",
+        steps: [
+          { icon: "🎙️", title: "ಮಾತನಾಡಿ ಉತ್ತರಿಸಿ", desc: "ನಿಮ್ಮ ವ್ಯಾಪಾರ ಮತ್ತು ಅನುಭವದ ಬಗ್ಗೆ 3 ಸುಲಭ ಪ್ರಶ್ನೆಗಳಿಗೆ ನಿಮ್ಮದೇ ಭಾಷೆಯಲ್ಲಿ ಮಾತನಾಡಿ." },
+          { icon: "✨", title: "AI ಕೌಶಲ್ಯ ಕಾರ್ಡ್ ಪಡೆಯಿರಿ", desc: "AI ನಿಮ್ಮ ಧ್ವನಿಯಿಂದ ದೈನಂದಿನ ನ್ಯಾಯಯುತ ಕೂಲಿಯೊಂದಿಗೆ ಅಧಿಕೃತ ಕಾರ್ಡ್ ನೀಡುತ್ತದೆ." },
+          { icon: "🪪", title: "QR ಕೋಡ್ ಮತ್ತು ಭರವಸೆ", desc: "ಹಿಂದಿನ ಗ್ರಾಹಕರು ಒಂದೇ ಟ್ಯಾಪ್‌ನಲ್ಲಿ ಭರವಸೆ ನೀಡುತ್ತಾರೆ. QR ಕೋಡ್ ತೋರಿಸಿ ಕೆಲಸ ಪಡೆಯಿರಿ." }
+        ]
+      }
+    };
+
+    // 2. Demo Seeded Workers for Bengaluru
+    let demoWorkers = [
+      {
+        id: "worker-ramesh-kumar",
+        name: "Ramesh Kumar",
+        phone: "9876543210",
+        trade: "Plumber",
+        icon: "🚰",
+        area: "Koramangala, Bengaluru",
+        exp: 7,
+        level: "expert",
+        vouchesCount: 2,
+        wage: "₹850 - ₹1,250/day",
+        summary: "7 वर्षों के अनुभव के साथ CPVC और UPVC कंसील्ड पाइप फिटिंग और लीकेज रिपेयर के कुशल कारीगर हैं।",
+        skills: ["Concealed Pipe Fitting", "Leak Detection", "Sanitary Ware", "Booster Pump Setup", "Drainage Clearing"]
+      },
+      {
+        id: "worker-sunita-devi",
+        name: "Sunita Devi",
+        phone: "9811223344",
+        trade: "Electrician",
+        icon: "⚡",
+        area: "Indiranagar, Bengaluru",
+        exp: 5,
+        level: "expert",
+        vouchesCount: 3,
+        wage: "₹900 - ₹1,350/day",
+        summary: "MCB ट्रिपिंग, 3-फेज मोटर वायरिंग और इन्वर्टर बैकअप सिस्टम की विशेषज्ञ।",
+        skills: ["3-Phase Wiring", "MCB Distribution", "Inverter Installation", "Fault Tracing", "Appliance Safety"]
+      },
+      {
+        id: "worker-imran-khan",
+        name: "Imran Khan",
+        phone: "9731234567",
+        trade: "Mason",
+        icon: "🧱",
+        area: "Whitefield, Bengaluru",
+        exp: 8,
+        level: "expert",
+        vouchesCount: 2,
+        wage: "₹800 - ₹1,150/day",
+        summary: "इटाई चुनाई, वाटरप्रूफिंग प्लास्टर और टाइल्स लेवलिंग के अनुभवी राजमिस्त्री।",
+        skills: ["Brick Laying", "Waterproof Plastering", "Tile Alignment", "Column Casting", "Water Curing"]
+      },
+      {
+        id: "worker-manjunath-gowda",
+        name: "Manjunath Gowda",
+        phone: "9448123456",
+        trade: "Carpenter",
+        icon: "🪚",
+        area: "Jayanagar, Bengaluru",
+        exp: 6,
+        level: "expert",
+        vouchesCount: 2,
+        wage: "₹950 - ₹1,400/day",
+        summary: "ಮನೆಯ ಕಪಾಟು, ಮಾಡ್ಯುಲರ್ ಕಿಚನ್ ಮತ್ತು ಫರ್ನಿಚರ್ ರಿಪೇರಿಯಲ್ಲಿ 6 ವರ್ಷಗಳ ನಿಪುಣತೆ ಹೊಂದಿದ್ದಾರೆ.",
+        skills: ["Modular Kitchen", "Hinges & Channels", "Door Framing", "Laminate Pasting", "Wood Polish"]
+      },
+      {
+        id: "worker-anand-verma",
+        name: "Anand Verma",
+        phone: "9654321098",
+        trade: "Painter",
+        icon: "🎨",
+        area: "HSR Layout, Bengaluru",
+        exp: 4,
+        level: "intermediate",
+        vouchesCount: 1,
+        wage: "₹750 - ₹1,000/day",
+        summary: "पुट्टी फिनिशिंग, प्राइमर कोटिंग और रॉयल इमल्शन पेंटिंग में पारंगत।",
+        skills: ["Wall Putty", "Roller Painting", "Waterproofing Primer", "Color Mixing"]
+      }
+    ];
+
+    // 3. Demo Seeded Jobs
+    let demoJobs = [
+      {
+        id: "job-1",
+        title: "Urgent: Concealed Bathroom Pipe Leakage Repair",
+        trade: "Plumber",
+        icon: "🚰",
+        area: "Koramangala 4th Block, Bengaluru",
+        pay: "₹1,200/day",
+        employer: "Ananya Sharma",
+        phone: "9845012345"
+      },
+      {
+        id: "job-2",
+        title: "Complete 3BHK Commercial Electric Wiring & DB Setup",
+        trade: "Electrician",
+        icon: "⚡",
+        area: "Indiranagar 100ft Rd, Bengaluru",
+        pay: "₹1,400/day",
+        employer: "Prestige Projects",
+        phone: "9876541230"
+      },
+      {
+        id: "job-3",
+        title: "Modular Kitchen Plywood & Hydraulic Hinge Fitting",
+        trade: "Carpenter",
+        icon: "🪚",
+        area: "HSR Layout Sector 2, Bengaluru",
+        pay: "₹1,300/day",
+        employer: "Urban Living Interiors",
+        phone: "9812345678"
+      }
+    ];
+
+    // Current State
+    let currentLang = 'en';
+    let currentScreen = 'home';
+    let selectedTrade = 'Plumber';
+    let interviewLang = 'hi-IN';
+    let currentQIndex = 0;
+    let isRecording = false;
+    let recognition = null;
+    let vouchRelationship = 'customer';
+    let vouchWouldHire = true;
+
+    // Interview Questions Dictionary
+    const tradeQuestions = {
+      Plumber: [
+        "किचन सिंक में कचरा और तेल जमने से पानी उल्टा आ रहा है। आप इसे खोलने के लिए कौन सा औज़ार और तरीका इस्तेमाल करेंगे?",
+        "बाथरूम की दीवार में टाइल्स के पीछे छिपी हुई पाइप लीकेज का पता आप बिना पूरी दीवार तोड़े कैसे लगाते हैं?",
+        "CPVC और UPVC पाइप जोड़ते समय कौन सा सॉल्वेंट सीमेंट इस्तेमाल करते हैं ताकि पानी का प्रेशर आने पर जोड़ न छूटे?",
+        "सुरक्षा सवाल: मुख्य पानी की हाई-प्रेशर लाइन खोलने या गहरे नाले/टैंक में उतरने से पहले आप क्या सावधानियां बरतते हैं?"
+      ],
+      Electrician: [
+        "अगर सीलिंग पंखा हाई स्पीड पर चल रहा है लेकिन 1 और 2 नंबर स्पीड पर नहीं चल रहा, तो आप पहले क्या चेक करेंगे?",
+        "घर में MCB बार-बार ट्रिप हो रही है लेकिन कोई उपकरण नहीं चल रहा। आप शॉर्ट सर्किट कैसे खोजेंगे?",
+        "3-फेज मोटर में रिवर्स रोटेशन को सही करने के लिए आप किन दो तारों को आपस में बदलते हैं?",
+        "सुरक्षा सवाल: लाइव पैनल पर काम करने से पहले आप टेस्टर और रबर मैटिंग का इस्तेमाल कैसे करते हैं?"
+      ]
+    };
+
+    const sampleAnswers = {
+      Plumber: [
+        "मैं पहले ड्रेन ऑगर वायर का इस्तेमाल करूँगा, फिर पी-ट्रैप खोलकर जमा हुआ कचरा साफ़ करूँगा।",
+        "प्रेशर गेज से लाइन का प्रेशर टेस्ट करूँगा और नमी मीटर से टाइल्स के पीछे गीलापन चेक करके सटीक जगह ढूंढूँगा।",
+        "CPVC के लिए हैवी ड्यूटी ऑरेंज सॉल्वेंट सीमेंट का इस्तेमाल करूँगा और पाइप को 90 डिग्री पर काटकर 15 सेकंड दबाकर रखूँगा।",
+        "सुरक्षा के लिए मुख्य वाल्व बंद करूँगा, प्रेशर रिलीज करूँगा और रबर ग्लव्स व बूट्स पहनूँगा।"
+      ]
+    };
+
+    // Initialize App
+    window.addEventListener('DOMContentLoaded', () => {
+      setLang('en');
+      renderFindWorkers();
+      renderJobs();
+    });
+
+    // Screen Switching Controller
+    function switchScreen(screenId) {
+      currentScreen = screenId;
+      const screens = ['home', 'create', 'interview', 'passport', 'vouch', 'find', 'jobs'];
+      screens.forEach(s => {
+        const el = document.getElementById(`screen-${s}`);
+        const tab = document.getElementById(`tab-${s}`);
+        if (el) el.classList.toggle('hidden', s !== screenId);
+        if (tab) {
+          if (s === screenId) {
+            tab.className = 'py-1.5 rounded-xl text-center transition-all bg-orange-600 text-white shadow-xs';
+          } else {
+            tab.className = 'py-1.5 rounded-xl text-center transition-all text-slate-400 hover:text-white';
+          }
+        }
+      });
+
+      // Update URL label in phone header
+      const urlLabel = document.getElementById('top-url-label');
+      if (urlLabel) {
+        urlLabel.innerText = screenId === 'home' ? 'hunarpass.in/' : `hunarpass.in/${screenId}`;
+      }
+
+      // Stop any speech when switching screens
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+
+      // Scroll phone body to top
+      document.getElementById('screen-container').scrollTop = 0;
+    }
+
+    // Language Controller
+    function setLang(lang) {
+      currentLang = lang;
+      ['en', 'hi', 'kn'].forEach(l => {
+        const btn = document.getElementById(`lang-btn-${l}`);
+        if (btn) {
+          if (l === lang) {
+            btn.className = 'px-2.5 py-1 rounded-xl text-xs font-black transition-all bg-orange-600 text-white shadow-xs';
+          } else {
+            btn.className = 'px-2.5 py-1 rounded-xl text-xs font-bold transition-all text-slate-600 hover:bg-slate-100';
+          }
+        }
+      });
+
+      const t = translations[lang];
+      document.getElementById('home-headline').innerText = t.headline;
+      document.getElementById('home-subline').innerText = t.subline;
+      document.getElementById('btn-worker-title').innerText = t.workerBtn;
+      document.getElementById('btn-worker-sub').innerText = t.workerSub;
+      document.getElementById('btn-hiring-title').innerText = t.hiringBtn;
+      document.getElementById('btn-hiring-sub').innerText = t.hiringSub;
+      document.getElementById('home-listen-btn').innerText = t.listen;
+
+      // Render 3 Steps
+      const container = document.getElementById('hiw-steps-container');
+      container.innerHTML = t.steps.map((st, idx) => `
+        <div class="flex items-start gap-2.5 p-2 rounded-xl bg-slate-50 border border-slate-200">
+          <div class="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-lg flex-shrink-0 shadow-xs">
+            ${st.icon}
+          </div>
+          <div>
+            <h5 class="text-xs font-black text-slate-900 leading-tight">${st.title}</h5>
+            <p class="text-[10px] text-slate-600 mt-0.5 leading-snug">${st.desc}</p>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Spoken Audio via Web Speech Synthesis
+    function speakCurrentHero() {
+      if (!('speechSynthesis' in window)) {
+        alert('Speech synthesis is not supported on your browser.');
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const t = translations[currentLang];
+      const utter = new SpeechSynthesisUtterance(`${t.headline} ${t.subline}`);
+      utter.lang = currentLang === 'hi' ? 'hi-IN' : currentLang === 'kn' ? 'kn-IN' : 'en-IN';
+      utter.rate = 0.9;
+      window.speechSynthesis.speak(utter);
+    }
+
+    function toggleAudioSpeech() {
+      speakCurrentHero();
+    }
+
+    // Phone Validator
+    function validateRegistrationPhone() {
+      const input = document.getElementById('reg-phone');
+      const val = input.value.replace(/\D/g, '');
+      const valid = /^[6-9]\d{9}$/.test(val);
+      const badge = document.getElementById('phone-valid-badge');
+      const errMsg = document.getElementById('phone-err-msg');
+
+      if (valid) {
+        badge.className = 'text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200';
+        badge.innerText = '✓ Valid Indian Number';
+        errMsg.classList.add('hidden');
+      } else {
+        badge.className = 'text-[9px] font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded-md border border-rose-200';
+        badge.innerText = 'Invalid';
+        if (val.length === 10) errMsg.classList.remove('hidden');
+      }
+    }
+
+    function selectTrade(tradeName) {
+      selectedTrade = tradeName;
+      ['Plumber', 'Electrician', 'Mason', 'Carpenter', 'Painter', 'Welder', 'Mechanic'].forEach(t => {
+        const btn = document.getElementById(`t-${t}`);
+        if (btn) {
+          if (t === tradeName) {
+            btn.className = 'p-2 rounded-2xl border-2 border-orange-500 bg-orange-50 text-orange-950 flex flex-col items-center gap-0.5 shadow-xs';
+          } else {
+            btn.className = 'p-2 rounded-2xl border-2 border-slate-200 bg-white text-slate-700 flex flex-col items-center gap-0.5';
+          }
+        }
+      });
+    }
+
+    function setInterviewLang(lang) {
+      interviewLang = lang;
+      ['hi-IN', 'kn-IN', 'en-IN'].forEach(l => {
+        const code = l.split('-')[0];
+        const btn = document.getElementById(`ilang-${code}`);
+        if (btn) {
+          if (l === lang) {
+            btn.className = 'py-2 rounded-2xl border-2 border-orange-500 bg-orange-50 text-orange-950 font-black text-xs text-center';
+          } else {
+            btn.className = 'py-2 rounded-2xl border-2 border-slate-200 bg-white text-slate-700 font-bold text-xs text-center';
+          }
+        }
+      });
+    }
+
+    function prefillSampleWorker() {
+      document.getElementById('reg-name').value = 'Ramesh Kumar';
+      document.getElementById('reg-phone').value = '9876543210';
+      validateRegistrationPhone();
+      selectTrade('Plumber');
+      document.getElementById('reg-area').value = 'Koramangala, Bengaluru';
+      document.getElementById('reg-exp').value = '7';
+      document.getElementById('exp-val').innerText = '7 Years';
+      setInterviewLang('hi-IN');
+    }
+
+    // Save Registration & Start Interview
+    function saveWorkerAndStartInterview() {
+      const name = document.getElementById('reg-name').value.trim();
+      const phone = document.getElementById('reg-phone').value.trim();
+      if (!name || !/^[6-9]\d{9}$/.test(phone)) {
+        alert('Please enter your full name and a valid 10-digit Indian mobile number.');
+        return;
+      }
+
+      document.getElementById('interview-worker-label').innerText = `${name} • ${selectedTrade}`;
+      const icon = selectedTrade === 'Plumber' ? '🚰' : selectedTrade === 'Electrician' ? '⚡' : '🔧';
+      document.getElementById('interview-trade-icon').innerText = icon;
+
+      currentQIndex = 0;
+      loadInterviewQuestion(0);
+      switchScreen('interview');
+    }
+
+    function loadInterviewQuestion(index) {
+      currentQIndex = index;
+      const qList = tradeQuestions[selectedTrade] || tradeQuestions['Plumber'];
+      const q = qList[index];
+
+      document.getElementById('interview-progress-label').innerText = `Question ${index + 1} of 4 • ${index === 3 ? 'Workplace Safety' : 'Diagnostic'}`;
+      document.getElementById('current-question-text').innerText = `"${q}"`;
+
+      // Update question pills
+      const pills = document.querySelectorAll('#question-pills span');
+      pills.forEach((p, idx) => {
+        p.className = idx <= index ? 'w-2.5 h-2.5 rounded-full bg-orange-600' : 'w-2.5 h-2.5 rounded-full bg-slate-200';
+      });
+
+      document.getElementById('live-transcript').value = '';
+      document.getElementById('btn-next-question').innerHTML = index === 3 ? '<span>Issue Skill Card</span> <span>✨</span>' : '<span>Next Question</span> <span>→</span>';
+    }
+
+    function speakCurrentQuestion() {
+      const qText = document.getElementById('current-question-text').innerText;
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(qText);
+      utter.lang = interviewLang;
+      utter.rate = 0.9;
+      window.speechSynthesis.speak(utter);
+    }
+
+    function toggleMicrophone() {
+      const btn = document.getElementById('mic-main-btn');
+      const label = document.getElementById('mic-status-label');
+
+      if (!isRecording) {
+        // Start simulated/actual recording
+        isRecording = true;
+        btn.classList.add('pulse-ring');
+        label.innerText = 'Listening... Speak now';
+        label.className = 'text-xs font-black text-orange-600 animate-pulse';
+
+        // Check Web Speech API
+        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRec) {
+          try {
+            recognition = new SpeechRec();
+            recognition.lang = interviewLang;
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.onresult = (e) => {
+              let str = '';
+              for (let i = 0; i < e.results.length; i++) {
+                str += e.results[i][0].transcript;
+              }
+              document.getElementById('live-transcript').value = str;
+            };
+            recognition.start();
+          } catch (e) {
+            simulateVoiceStream();
+          }
+        } else {
+          simulateVoiceStream();
+        }
+      } else {
+        // Stop recording
+        isRecording = false;
+        btn.classList.remove('pulse-ring');
+        label.innerText = 'Answer recorded. You can edit above or continue.';
+        label.className = 'text-xs font-black text-slate-800';
+        if (recognition) {
+          try { recognition.stop(); } catch (e) {}
+        }
+      }
+    }
+
+    function simulateVoiceStream() {
+      const answers = sampleAnswers[selectedTrade] || sampleAnswers['Plumber'];
+      const targetAns = answers[currentQIndex] || "मैं पाइप की पूरी टेस्टिंग करूँगा और सावधानी से काम करूँगा।";
+      let charIdx = 0;
+      const interval = setInterval(() => {
+        if (!isRecording) {
+          clearInterval(interval);
+          return;
+        }
+        charIdx += 3;
+        document.getElementById('live-transcript').value = targetAns.slice(0, charIdx);
+        if (charIdx >= targetAns.length) {
+          clearInterval(interval);
+          toggleMicrophone();
+        }
+      }, 70);
+    }
+
+    function usePreRecordedSample() {
+      const answers = sampleAnswers[selectedTrade] || sampleAnswers['Plumber'];
+      document.getElementById('live-transcript').value = answers[currentQIndex] || "सटीक डायग्नोसिस और सुरक्षा प्रोटोकॉल का पालन।";
+    }
+
+    function fastTrackAllAnswers() {
+      usePreRecordedSample();
+      setTimeout(() => {
+        finishInterviewAndShowPassport();
+      }, 500);
+    }
+
+    function nextQuestionOrSubmit() {
+      if (currentQIndex < 3) {
+        loadInterviewQuestion(currentQIndex + 1);
+      } else {
+        finishInterviewAndShowPassport();
+      }
+    }
+
+    function finishInterviewAndShowPassport() {
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      switchScreen('passport');
+    }
+
+    // Passport Actions
+    function speakPassportSummary() {
+      const summary = document.getElementById('pass-summary').innerText;
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(summary);
+      utter.lang = interviewLang;
+      utter.rate = 0.9;
+      window.speechSynthesis.speak(utter);
+    }
+
+    function sharePassportWhatsApp() {
+      const msg = encodeURIComponent(`🪪 *Hunar Pass - Verified Skill Passport*\n👤 *Ramesh Kumar* (Plumber • 7 Yrs Exp)\n⭐ *Level*: Expert (Verified via voice interview)\n💰 *Indicative Daily Wage*: ₹850 - ₹1,250/day\n🔗 View verified credential: https://hunarpass.in/w/worker-ramesh-kumar`);
+      window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
+    }
+
+    function copyPassportLink() {
+      navigator.clipboard?.writeText(window.location.href);
+      alert('✓ Public passport link copied to clipboard!');
+    }
+
+    // Vouching Actions
+    function setRelationship(rel) {
+      vouchRelationship = rel;
+      ['customer', 'coworker', 'employer'].forEach(r => {
+        const btn = document.getElementById(`rel-${r}`);
+        if (btn) {
+          if (r === rel.replace('-', '')) {
+            btn.className = 'py-2 rounded-xl border-2 border-orange-500 bg-orange-50 text-orange-950 font-black text-[11px]';
+          } else {
+            btn.className = 'py-2 rounded-xl border-2 border-slate-200 bg-white text-slate-700 font-bold text-[11px]';
+          }
+        }
+      });
+    }
+
+    function setWouldHire(val) {
+      vouchWouldHire = val;
+      const yesBtn = document.getElementById('hire-yes');
+      const noBtn = document.getElementById('hire-no');
+      if (val) {
+        yesBtn.className = 'py-2.5 rounded-2xl border-2 border-emerald-500 bg-emerald-50 text-emerald-950 font-black text-xs flex items-center justify-center gap-1.5 shadow-xs';
+        noBtn.className = 'py-2.5 rounded-2xl border-2 border-slate-200 bg-white text-slate-600 font-bold text-xs flex items-center justify-center gap-1.5';
+      } else {
+        yesBtn.className = 'py-2.5 rounded-2xl border-2 border-slate-200 bg-white text-slate-600 font-bold text-xs flex items-center justify-center gap-1.5';
+        noBtn.className = 'py-2.5 rounded-2xl border-2 border-rose-500 bg-rose-50 text-rose-950 font-black text-xs flex items-center justify-center gap-1.5 shadow-xs';
+      }
+    }
+
+    function submitVouchForm() {
+      const name = document.getElementById('vouch-name').value.trim();
+      const phone = document.getElementById('vouch-phone').value.trim();
+      const comment = document.getElementById('vouch-comment').value.trim();
+
+      if (!name || !/^[6-9]\d{9}$/.test(phone)) {
+        alert('Please enter your full name and a valid 10-digit mobile number.');
+        return;
+      }
+
+      // Check self-vouch rule
+      if (phone === '9876543210') {
+        alert('Self-vouching is prohibited: A worker cannot vouch for their own profile!');
+        return;
+      }
+
+      // Append new vouch item
+      const list = document.getElementById('pass-vouches-list');
+      const maskedName = name.split(' ')[0] + ' ' + (name.split(' ')[1] ? name.split(' ')[1][0] + '.' : '');
+      const newVouchHtml = `
+        <div class="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200 flex flex-col gap-1">
+          <div class="flex justify-between items-center text-[11px] font-bold">
+            <span class="text-emerald-950">${maskedName}, ${vouchRelationship}</span>
+            <span class="text-[9px] text-emerald-700">Nov 2026 • Would Hire Again 👍</span>
+          </div>
+          <p class="text-[11px] text-emerald-900">${comment || "Professional and high quality work!"}</p>
+        </div>
+      `;
+      list.insertAdjacentHTML('afterbegin', newVouchHtml);
+
+      // Increment count
+      const countEl = document.getElementById('pass-vouch-count');
+      const newCount = parseInt(countEl.innerText) + 1;
+      countEl.innerText = newCount;
+      document.getElementById('pass-trust-header').innerText = `Trust Level: High (${newCount} Customer Vouches)`;
+
+      alert('✓ Thank you! Your endorsement has been verified and added to Ramesh Kumar\'s skill passport.');
+      switchScreen('passport');
+    }
+
+    // Find Directory Actions
+    let currentFindTrade = 'All';
+    function filterFindTrade(trade) {
+      currentFindTrade = trade;
+      ['All', 'Plumber', 'Electrician', 'Mason', 'Carpenter', 'Painter'].forEach(t => {
+        const btn = document.getElementById(`ft-${t}`);
+        if (btn) {
+          if (t === trade) {
+            btn.className = 'px-2.5 py-1 rounded-xl bg-orange-600 text-white shadow-xs whitespace-nowrap';
+          } else {
+            btn.className = 'px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 whitespace-nowrap';
+          }
+        }
+      });
+      renderFindWorkers();
+    }
+
+    function renderFindWorkers() {
+      const area = document.getElementById('find-area-select').value;
+      const container = document.getElementById('find-workers-list');
+
+      let list = demoWorkers.filter(w => {
+        const matchesTrade = currentFindTrade === 'All' || w.trade === currentFindTrade;
+        const matchesArea = area === 'All Areas' || w.area.includes(area);
+        return matchesTrade && matchesArea;
+      });
+
+      // Rank verified and vouched workers first
+      list.sort((a, b) => b.vouchesCount - a.vouchesCount);
+
+      container.innerHTML = list.map(w => `
+        <div class="bg-white rounded-2xl p-3 border-2 border-slate-200 shadow-xs flex flex-col gap-2">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="w-10 h-10 rounded-xl bg-orange-50 border border-orange-200 flex items-center justify-center text-xl">
+                ${w.icon}
+              </div>
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <h4 class="text-xs font-black text-slate-900 leading-tight">${w.name}</h4>
+                  <span class="text-[9px] bg-emerald-50 text-emerald-800 border border-emerald-200 px-1.5 py-0.2 rounded-md font-bold">
+                    ✓ ${w.vouchesCount} vouches
+                  </span>
+                </div>
+                <p class="text-[10px] text-slate-500 font-semibold">${w.trade} • ${w.exp} Yrs Exp • ${w.area.split(',')[0]}</p>
+              </div>
+            </div>
+            <span class="text-[9px] font-black uppercase tracking-wider bg-slate-100 text-slate-700 px-2 py-0.5 rounded-lg">
+              ${w.level}
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between pt-1 border-t border-slate-100 text-[10px]">
+            <span class="font-black text-orange-600">${w.wage}</span>
+            <div class="flex items-center gap-1">
+              <button onclick="switchScreen('passport')" class="px-2.5 py-1 bg-slate-900 text-white rounded-lg font-bold hover:bg-slate-800">
+                View Passport →
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Jobs Board Actions
+    function togglePostJobModal() {
+      const box = document.getElementById('post-job-form-box');
+      box.classList.toggle('hidden');
+    }
+
+    function submitNewJob() {
+      const title = document.getElementById('job-title').value.trim();
+      const trade = document.getElementById('job-trade').value;
+      const pay = document.getElementById('job-pay').value.trim();
+      const employer = document.getElementById('job-employer').value.trim();
+      const phone = document.getElementById('job-contact').value.trim();
+
+      if (!title || !/^[6-9]\d{9}$/.test(phone)) {
+        alert('Please enter a job title and valid 10-digit employer mobile number.');
+        return;
+      }
+
+      const icon = trade === 'Plumber' ? '🚰' : trade === 'Electrician' ? '⚡' : '🔧';
+      demoJobs.unshift({
+        id: 'job-' + Date.now(),
+        title,
+        trade,
+        icon,
+        area: 'Bengaluru Central',
+        pay: pay || '₹1,000/day',
+        employer: employer || 'Verified Employer',
+        phone
+      });
+
+      renderJobs();
+      togglePostJobModal();
+      alert('✓ Job published successfully to the Bengaluru board!');
+    }
+
+    function renderJobs() {
+      const container = document.getElementById('jobs-list-container');
+      container.innerHTML = demoJobs.map(j => `
+        <div class="bg-white rounded-2xl p-3 border-2 border-slate-200 shadow-xs flex flex-col gap-2">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">${j.icon}</span>
+              <div>
+                <h4 class="text-xs font-black text-slate-900 leading-tight">${j.title}</h4>
+                <p class="text-[10px] text-slate-500 font-semibold">${j.area} • By ${j.employer}</p>
+              </div>
+            </div>
+            <span class="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">
+              ${j.pay}
+            </span>
+          </div>
+          <div class="flex justify-between items-center pt-1 border-t border-slate-100">
+            <span class="text-[9px] text-slate-400 font-bold">Contact: +91 ${j.phone}</span>
+            <a href="https://api.whatsapp.com/send?phone=91${j.phone}&text=Hello%20I%20am%20interested%20in%20your%20trade%20job" target="_blank" class="px-2.5 py-1 bg-emerald-600 text-white rounded-lg text-[10px] font-bold flex items-center gap-1">
+              <span>💬 Apply via WhatsApp</span>
+            </a>
+          </div>
+        </div>
+      `).join('');
+    }
+  </script>
+</body>
+</html>
